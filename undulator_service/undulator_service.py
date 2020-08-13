@@ -62,8 +62,8 @@ class phaseShifterPV(PVGroup):
 
 class UndulatorPV(PVGroup):
     useg_proc = pvproperty(value=0, name=':ConvertK2Gap.PROC' ) #Go command
-    #gapact = pvproperty(value=0.0, name=':GapAct')
-    #gapdes = pvproperty(value=0.0, name=':GapDes')
+    gapact = pvproperty(value=0.0, name=':US:EncRbck')
+    gapdes = pvproperty(value=0.0, name=':US:EncRbck')
     kact = pvproperty(value=0.0, name=':KAct', read_only=True)
     kdes = pvproperty(value=0.0, name=':KDes')
     taper_des = pvproperty(value=0.0, name=':TaperDes')
@@ -75,6 +75,8 @@ class UndulatorPV(PVGroup):
         super().__init__(*args, **kwargs)
         self.device_name = device_name  
         self.element_name = element_name
+        self.gapact._data['value'] = 0 
+        self.gapdes._data['value'] = 0
         self.kact._data['value'] = float(initial_values['kact'])
         self.kdes._data['value'] = float(initial_values['kact'])
         self.taper_des._data['value'] = 0
@@ -85,6 +87,7 @@ class UndulatorPV(PVGroup):
     async def useg_proc(self, instance, value):
         ioc = instance.group
         await asyncio.sleep(0.2)
+        await ioc.gapact.write(ioc.gapdes.value)
         await ioc.kact.write(ioc.kdes.value)
         await self.change_callback(self, ioc.kact.value)  
 
